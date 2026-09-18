@@ -1,0 +1,19 @@
+{
+  "name": "speed-to-lead",
+  "version": "1.0.0",
+  "description": "Speed-to-lead e gestao de equipa para consultores imobiliarios",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute DB --local --file=./schema.sql",
+    "db:remote": "wrangler d1 execute DB --remote --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.133.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
+    "postal-mime": "^2.7.6"
+  }
+}

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Speed-to-Lead</title>
+<meta name="description" content="Responde a cada lead em minutos e organiza a equipa.">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- ============================================ INSTALACAO (primeira vez) -->
+<section id="ecra-arranque" class="entrada" hidden>
+  <div class="cartao">
+    <h1>Bem-vindo</h1>
+    <p class="sub">Vamos criar a sua conta. Demora um minuto e fica só na sua instalação.</p>
+    <form id="form-arranque">
+      <label class="campo"><span>O seu nome</span><input name="nome" required autocomplete="name"></label>
+      <label class="campo"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
+      <label class="campo"><span>Telemóvel (para os links de WhatsApp)</span>
+        <input name="telefone" inputmode="tel" placeholder="912 345 678" autocomplete="tel"></label>
+      <label class="campo"><span>PIN de acesso (4 ou mais dígitos)</span>
+        <input name="pin" type="password" inputmode="numeric" required minlength="4" autocomplete="new-password"></label>
+      <button class="botao principal" style="width:100%">Criar conta</button>
+      <p class="nota-rodape" id="erro-arranque" role="alert"></p>
+    </form>
+  </div>
+</section>
+
+<!-- =========================================================== ENTRAR -->
+<section id="ecra-entrar" class="entrada" hidden>
+  <div class="cartao">
+    <h1>Entrar</h1>
+    <p class="sub">Use o email e o PIN que definiu.</p>
+    <form id="form-entrar">
+      <label class="campo"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
+      <label class="campo"><span>PIN</span>
+        <input name="pin" type="password" inputmode="numeric" required autocomplete="current-password"></label>
+      <button class="botao principal" style="width:100%">Entrar</button>
+      <p class="nota-rodape" id="erro-entrar" role="alert"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============================================================= APP -->
+<div id="ecra-app" hidden>
+  <header class="topo">
+    <div class="marca">Speed<span>·</span>to<span>·</span>Lead</div>
+    <span class="etiqueta" id="quem"></span>
+    <button class="botao" id="btn-sair" style="padding:7px 12px">Sair</button>
+  </header>
+
+  <nav class="abas" role="tablist">
+    <button role="tab" data-painel="leads" aria-selected="true">Leads</button>
+    <button role="tab" data-painel="equipa" aria-selected="false">Equipa</button>
+    <button role="tab" data-painel="definicoes" aria-selected="false">Definições</button>
+    <button role="tab" data-painel="estado" aria-selected="false">Estado do sistema</button>
+  </nav>
+
+  <main>
+    <!-- --------------------------------------------------------- LEADS -->
+    <section class="painel" id="painel-leads">
+      <div class="metricas" id="metricas"></div>
+
+      <div class="filtros" id="filtros">
+        <button data-estado="nova" aria-pressed="true">Por contactar</button>
+        <button data-estado="todas" aria-pressed="false">Todas</button>
+        <button data-estado="em_conversa" aria-pressed="false">Em conversa</button>
+        <button data-estado="visita" aria-pressed="false">Visita</button>
+        <button data-estado="ganha" aria-pressed="false">Ganhas</button>
+        <button data-minhas="1" aria-pressed="false">Só as minhas</button>
+      </div>
+
+      <div class="lista" id="lista-leads"></div>
+    </section>
+
+    <!-- -------------------------------------------------------- EQUIPA -->
+    <section class="painel" id="painel-equipa" hidden>
+      <div class="cartao" style="overflow-x:auto;margin-bottom:16px">
+        <table>
+          <thead><tr>
+            <th>Consultor</th><th>Tempo médio</th><th>Por contactar</th><th>Total</th><th>Ganhas</th>
+          </tr></thead>
+          <tbody id="tabela-equipa"></tbody>
+        </table>
+      </div>
+      <p class="nota-rodape">
+        A ordenação é por tempo médio de primeira resposta — a única métrica que prevê conversão
+        antes de haver conversão.
+      </p>
+      <div class="cartao" style="padding:18px;margin-top:16px" id="bloco-add-consultor" hidden>
+        <h2 style="margin-bottom:12px">Acrescentar à equipa</h2>
+        <form id="form-consultor">
+          <label class="campo"><span>Nome</span><input name="nome" required></label>
+          <label class="campo"><span>Email</span><input name="email" type="email" required></label>
+          <label class="campo"><span>Telemóvel</span><input name="telefone" inputmode="tel"></label>
+          <label class="campo"><span>Função</span>
+            <select name="papel"><option value="consultor">Consultor</option><option value="broker">Broker</option></select>
+          </label>
+          <button class="botao principal">Acrescentar</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------- DEFINICOES -->
+    <section class="painel" id="painel-definicoes" hidden>
+      <div class="cartao" style="padding:18px;margin-bottom:16px">
+        <h2 style="margin-bottom:4px">Inteligência artificial</h2>
+        <p class="nota-rodape" style="margin:0 0 16px">
+          A chave fica guardada na sua própria base de dados. Nunca sai da sua instalação.
+        </p>
+        <form id="form-definicoes">
+          <label class="campo"><span>Chave da API Anthropic</span>
+            <input name="anthropic_api_key" type="password" placeholder="sk-ant-..." autocomplete="off">
+            <small class="nota-rodape" id="estado-chave"></small>
+          </label>
+          <label class="campo"><span>Modelo</span>
+            <select name="modelo_ia">
+              <option value="claude-opus-5">Claude Opus 5 — melhor qualidade</option>
+              <option value="claude-haiku-4-5">Claude Haiku 4.5 — mais barato</option>
+            </select>
+          </label>
+          <label class="campo"><span>Assinatura nas mensagens</span>
+            <input name="assinatura" placeholder="João Silva · Consultor Imobiliário">
+          </label>
+          <label class="campo"><span>Endereço para onde reencaminha as leads</span>
+            <input name="endereco_leads" placeholder="leads@oseudominio.pt">
+            <small class="nota-rodape">Configure o reencaminhamento no Gmail: Definições → Reencaminhamento.</small>
+          </label>
+          <button class="botao principal">Guardar</button>
+          <span class="nota-rodape" id="guardado"></span>
+        </form>
+      </div>
+
+      <div class="cartao" style="padding:18px">
+        <h2 style="margin-bottom:8px">Receber leads de outras origens</h2>
+        <p class="nota-rodape" style="margin:0 0 10px">
+          Qualquer sistema pode enviar leads para aqui — Meta Lead Ads, Google Ads, o formulário
+          do seu site, Make, n8n ou Zapier. Basta um POST para:
+        </p>
+        <code id="url-webhook" style="display:block;background:var(--frio-fundo);padding:10px 12px;border-radius:8px;font-size:.82rem;word-break:break-all"></code>
+        <p class="nota-rodape">
+          Campos aceites: <code>nome</code>, <code>email</code>, <code>telefone</code>,
+          <code>mensagem</code>, <code>imovel_ref</code>, <code>imovel_titulo</code>, <code>imovel_url</code>.
+          É preciso pelo menos um email ou um telefone.
+        </p>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- ESTADO -->
+    <section class="painel" id="painel-estado" hidden>
+      <div class="cartao" id="lista-estado"></div>
+      <p class="nota-rodape">
+        Se alguma linha estiver vermelha, as leads podem estar a entrar sem serem qualificadas —
+        mas nunca se perdem: ficam sempre gravadas.
+      </p>
+    </section>
+  </main>
+</div>
+
+<!-- ======================================================== GAVETA LEAD -->
+<div class="gaveta" id="gaveta" hidden>
+  <div id="gaveta-conteudo"></div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

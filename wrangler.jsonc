@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "speed-to-lead",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+
+  "observability": { "enabled": true },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "speed-to-lead-db",
+      "database_id": "36f57020-15e1-41f5-9186-fcd1fdc273e4",
+      "migrations_dir": "./migrations"
+    }
+  ],
+
+
+  "kv_namespaces": [
+    {
+      "binding": "SESSOES",
+      "id": "e440c513f79f4decad43b5a2ad110874"
+    }
+  ],
+
+  "vars": {
+    "APP_NOME": "Speed-to-Lead"
+  }
+}
