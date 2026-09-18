@@ -73,16 +73,26 @@ A chave fica guardada na sua base de dados. **Nunca sai da sua instalação.**
 > **Sem chave a aplicação continua a funcionar**, as leads entram e ficam
 > gravadas. Só não são qualificadas nem têm mensagem escrita.
 
-### Passo 5 · Fazer chegar as leads (2 min)
+### Passo 5 · Fazer chegar as leads dos portais (5 min)
 
-As leads dos portais chegam-lhe por email. Basta reencaminhá-las.
+As leads do Idealista, Casa SAPO, Imovirtual e RE/MAX chegam-lhe por email.
+Este passo faz com que entrem sozinhas na aplicação.
 
-**No Gmail:** Definições → **Reencaminhamento e POP/IMAP** → *Adicionar endereço
-de reencaminhamento* → cole o endereço que a aplicação lhe mostra em Definições.
+1. Vá a [script.google.com](https://script.google.com) e crie um projeto novo
+2. Apague o que lá estiver e cole o conteúdo do ficheiro **`gmail-para-app.gs`**
+   deste repositório
+3. Na linha `ENDERECO_DA_APP`, ponha o endereço da sua aplicação
+4. Menu **Executar** → escolha **instalar** → autorize quando pedir
+5. Pronto. De 5 em 5 minutos, as leads novas entram sozinhas
 
-Crie depois um filtro para reencaminhar só os emails dos portais
-(`de: idealista.pt OR casa.sapo.pt OR imovirtual.com`), para não mandar
-o resto do correio.
+O script só lê emails dos portais, marca-os com uma etiqueta depois de enviar,
+e nunca envia o mesmo duas vezes. **Não precisa de domínio próprio nem de mexer
+em DNS.**
+
+> **Se o seu domínio estiver alojado na Cloudflare**, existe um caminho
+> alternativo mais direto: ativar o Email Routing e encaminhar para o Worker.
+> Exige ter o domínio lá, o que a maioria não tem. O script do Gmail funciona
+> para toda a gente.
 
 ### Passo 6 (opcional) · Outras origens
 
@@ -134,15 +144,15 @@ Para gastar ainda menos, mude o modelo em **Definições** para
 
 ## Se alguma coisa não funcionar
 
-Abra o separador **Estado do sistema**. Mostra em verde ou vermelho se a base
-de dados, a inteligência artificial e a entrada de email estão a funcionar.
+Abra o separador **Estado do sistema**. Verde significa a funcionar, âmbar
+significa por configurar, vermelho significa a falhar.
 
 **Problemas mais comuns:**
 
 | Sintoma | Causa provável |
 |---|---|
 | Leads entram sem letra A/B/C | Sem chave de API, ou sem saldo na Anthropic |
-| Não chega nenhuma lead por email | O reencaminhamento no Gmail não foi confirmado |
+| Não chega nenhuma lead por email | O script do Gmail não foi instalado, ou o endereço da app está errado nele |
 | Não aparece botão de WhatsApp | A lead não trazia telemóvel |
 | Leads de um portal ficam sem nome | O portal mudou o formato do email · abra a lead e carregue em *Voltar a qualificar* |
 
@@ -185,13 +195,19 @@ npx wrangler dev
 | `src/ai.js` | Qualificação com Claude (structured output) |
 | `src/parsers.js` | Adaptadores por portal + normalização de telefones |
 | `src/utils.js` | Sessões, definições, links de WhatsApp |
-| `migrations/` | Esquema da base de dados |
+| `src/esquema.js` | Cria o esquema ao primeiro arranque |
+| `gmail-para-app.gs` | Script do Gmail que envia as leads dos portais |
 
 Os adaptadores em `parsers.js` estão desenhados em duas camadas: regex por
 portal, com recurso ao modelo quando o regex falha. O email original vai
 sempre para a tabela `emails_brutos` na D1, para reprocessamento quando um
 portal muda o template. Nada de R2: exige subscrição paga e esta aplicação
 tem de correr numa conta gratuita sem cartão.
+
+O handler `email()` em `src/index.js` existe para quem tenha o domínio na
+Cloudflare e queira usar o Email Routing. Para todos os outros, a entrada de
+email faz-se pelo script `gmail-para-app.gs`, que usa o mesmo
+`POST /api/leads` de qualquer outra origem.
 
 **Contribuições bem-vindas**, sobretudo adaptadores para portais novos.
 
