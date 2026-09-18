@@ -43,6 +43,13 @@ const ESTADOS = {
 let eu = null;
 let filtro = { estado: 'nova', minhas: false };
 let leads = [];
+let procura = '';
+let ordem = 'score';
+
+/* Tira acentos e maiusculas, para "sofia" encontrar "Sófia" e vice-versa.
+   Em palco procura-se pelo nome que a pessoa disse, nao pelo que esta escrito. */
+const normalizar = (t) => String(t || '')
+  .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /* ------------------------------------------------------------------ arranque */
 (async function iniciar() {
@@ -127,15 +134,42 @@ async function carregarLeads() {
   desenharLeads();
 }
 
+function ordenarEFiltrar() {
+  const termo = normalizar(procura).trim();
+  let lista = leads;
+
+  if (termo) {
+    lista = lista.filter((l) => normalizar(
+      [l.nome, l.telefone, l.email, l.zona, l.mensagem, l.resumo_ia, l.imovel_titulo, l.imovel_ref]
+        .filter(Boolean).join(' ')
+    ).includes(termo));
+  }
+
+  const instante = (l) => new Date(l.criado_em + 'Z').getTime();
+  const copia = [...lista];
+  if (ordem === 'recentes') copia.sort((a, b) => instante(b) - instante(a));
+  else if (ordem === 'espera') copia.sort((a, b) => instante(a) - instante(b));
+  else copia.sort((a, b) => (b.score || 0) - (a.score || 0) || instante(b) - instante(a));
+  return copia;
+}
+
 function desenharLeads() {
   const alvo = $('#lista-leads');
+  const visiveis = ordenarEFiltrar();
+
+  if (procura && !visiveis.length) {
+    alvo.innerHTML = `<div class="vazio-estado cartao">
+      <strong>Nada encontrado para "${esc(procura)}".</strong>
+      Experimente só o primeiro nome, ou os últimos dígitos do telefone.</div>`;
+    return;
+  }
   if (!leads.length) {
     alvo.innerHTML = `<div class="vazio-estado cartao">
       <strong>Nenhuma lead aqui.</strong>
       Quando chegar uma, aparece no topo e o relógio começa a contar.</div>`;
     return;
   }
-  alvo.innerHTML = leads.map((l) => {
+  alvo.innerHTML = visiveis.map((l) => {
     const t = decorrido(l.criado_em);
     const nova = l.estado === 'nova';
     const cls = nova ? (t.seg > 300 ? 'urgente' : '') : 'ok';
@@ -171,6 +205,18 @@ function actualizarRelogios() {
     el.classList.toggle('urgente', t.seg > 300);
   });
 }
+
+/* A pesquisa e local: a lista ja esta em memoria, por isso filtra ao ritmo
+   de quem escreve, sem ir a rede. Em palco isso e a diferenca entre encontrar
+   a lead do voluntario de imediato ou ficar a olhar para um ecra a carregar. */
+$('#procura').addEventListener('input', (ev) => {
+  procura = ev.target.value;
+  desenharLeads();
+});
+$('#ordem').addEventListener('change', (ev) => {
+  ordem = ev.target.value;
+  desenharLeads();
+});
 
 $('#lista-leads').addEventListener('click', (ev) => {
   const c = ev.target.closest('.lead');

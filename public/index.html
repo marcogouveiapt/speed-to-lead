@@ -62,6 +62,16 @@
     <section class="painel" id="painel-leads">
       <div class="metricas" id="metricas"></div>
 
+      <div class="procura">
+        <input id="procura" type="search" placeholder="Procurar por nome, telefone, zona ou texto da mensagem"
+               autocomplete="off" aria-label="Procurar leads">
+        <select id="ordem" aria-label="Ordenar">
+          <option value="score">Prioridade</option>
+          <option value="espera">Mais tempo à espera</option>
+          <option value="recentes">Mais recentes</option>
+        </select>
+      </div>
+
       <div class="filtros" id="filtros">
         <button data-estado="nova" aria-pressed="true">Por contactar</button>
         <button data-estado="todas" aria-pressed="false">Todas</button>
