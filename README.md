@@ -107,11 +107,11 @@ Content-Type: application/json
 
 ### Formulário para o seu site
 
-A aplicação traz um formulário pronto em `/captar.html`.
+A aplicação traz um formulário pronto em `/captar`.
 Pode personalizá-lo pelo endereço:
 
 ```
-https://a-sua-app.workers.dev/captar.html?titulo=Avaliação grátis da sua casa&ref=CAMP-01
+https://a-sua-app.workers.dev/captar?titulo=Avaliação grátis da sua casa&ref=CAMP-01
 ```
 
 ---
