@@ -17,7 +17,7 @@
     {
       "binding": "DB",
       "database_name": "speed-to-lead-db",
-      "database_id": "PLACEHOLDER_SUBSTITUIDO_NO_DEPLOY",
+      "database_id": "36f57020-15e1-41f5-9186-fcd1fdc273e4",
       "migrations_dir": "./migrations"
     }
   ],
