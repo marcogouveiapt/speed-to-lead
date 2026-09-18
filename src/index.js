@@ -8,6 +8,7 @@ import { json, erro, id, assinar, verificar, lerDefinicao, gravarDefinicao } fro
 import { parseDeterminista, detetarPortal } from './parsers.js';
 import { criarLead, qualificarLead, registarContacto, enriquecer } from './leads.js';
 import { testarChave, MODELO_OMISSAO } from './ai.js';
+import { garantirEsquema } from './esquema.js';
 
 const COOKIE = 'stl_sessao';
 
@@ -47,6 +48,10 @@ export default {
     if (!p.startsWith('/api/')) return env.ASSETS.fetch(req);
 
     try {
+      // O botao de instalacao cria a base de dados mas nao corre migracoes.
+      // A aplicacao trata disso sozinha, para nao exigir terminal a ninguem.
+      await garantirEsquema(db);
+
       // ---------- Publico: entrada de leads (formulario, webhook, palco)
       if (p === '/api/leads' && req.method === 'POST') {
         const corpo = await req.json().catch(() => null);
@@ -302,6 +307,7 @@ export default {
   /** ------------------------------------------------- Email Worker (leads) */
   async email(mensagem, env, ctx) {
     try {
+      await garantirEsquema(env.DB);
       const buffer = await new Response(mensagem.raw).arrayBuffer();
       const analisado = await PostalMime.parse(buffer);
 
