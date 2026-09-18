@@ -1,4 +1,4 @@
-/* Speed-to-Lead — interface. Sem framework, sem build. */
+/* Speed-to-Lead, interface. Sem framework, sem build. */
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -29,7 +29,7 @@ function decorrido(desde) {
 }
 
 const duracao = (seg) => {
-  if (seg == null) return '—';
+  if (seg == null) return '·';
   if (seg < 60) return seg + 's';
   if (seg < 3600) return Math.floor(seg / 60) + 'min';
   return (seg / 3600).toFixed(1) + 'h';
@@ -132,7 +132,7 @@ function desenharLeads() {
   if (!leads.length) {
     alvo.innerHTML = `<div class="vazio-estado cartao">
       <strong>Nenhuma lead aqui.</strong>
-      Quando chegar uma, aparece no topo — e o relógio começa a contar.</div>`;
+      Quando chegar uma, aparece no topo e o relógio começa a contar.</div>`;
     return;
   }
   alvo.innerHTML = leads.map((l) => {
@@ -141,7 +141,7 @@ function desenharLeads() {
     const cls = nova ? (t.seg > 300 ? 'urgente' : '') : 'ok';
     const selo = l.categoria
       ? `<div class="selo ${l.categoria}">${l.categoria}</div>`
-      : `<div class="selo vazio">—</div>`;
+      : `<div class="selo vazio">, </div>`;
     return `<article class="cartao lead ${nova ? 'nova' : ''}" data-id="${l.id}" tabindex="0">
       ${selo}
       <div>
@@ -181,7 +181,7 @@ $('#lista-leads').addEventListener('click', (ev) => {
 async function abrirLead(leadId) {
   const l = await api('/leads/' + leadId);
   const sinais = (l.sinais || []).map((s) => `<span class="etiqueta">${esc(s)}</span>`).join('');
-  const tel = l.telefone ? `<a href="tel:+${esc(l.telefone)}">+${esc(l.telefone)}</a>` : '—';
+  const tel = l.telefone ? `<a href="tel:+${esc(l.telefone)}">+${esc(l.telefone)}</a>` : '·';
 
   $('#gaveta-conteudo').innerHTML = `
     <div style="display:flex;align-items:start;gap:12px;margin-bottom:14px">
@@ -200,7 +200,7 @@ async function abrirLead(leadId) {
 
     ${l.link_whatsapp ? `
       <label class="campo" style="margin-top:14px">
-        <span>Mensagem de primeiro contacto — leia antes de enviar</span>
+        <span>Mensagem de primeiro contacto, leia antes de enviar</span>
         <textarea id="msg-whatsapp">${esc(l.rascunho_whatsapp || '')}</textarea>
       </label>
       <a class="botao whatsapp" id="btn-whatsapp" href="${esc(l.link_whatsapp)}" target="_blank" rel="noopener">
@@ -208,7 +208,7 @@ async function abrirLead(leadId) {
       </a>
       <p class="nota-rodape" style="text-align:center">
         A mensagem é enviada por si, do seu WhatsApp. A app nunca envia nada sozinha.</p>
-    ` : `<div class="aviso">Sem telemóvel nesta lead — só é possível responder por email.</div>`}
+    ` : `<div class="aviso">Sem telemóvel nesta lead, só é possível responder por email.</div>`}
 
     <div class="botoes" style="margin:16px 0">
       ${l.email ? `<a class="botao" href="mailto:${esc(l.email)}">Email</a>` : ''}
@@ -226,13 +226,13 @@ async function abrirLead(leadId) {
     <div class="cartao" style="padding:0;margin-top:8px">
       <table><tbody>
         <tr><th>Telefone</th><td>${tel}</td></tr>
-        <tr><th>Email</th><td>${esc(l.email || '—')}</td></tr>
+        <tr><th>Email</th><td>${esc(l.email || '·')}</td></tr>
         <tr><th>Imóvel</th><td>${l.imovel_url
           ? `<a href="${esc(l.imovel_url)}" target="_blank" rel="noopener">${esc(l.imovel_titulo || l.imovel_ref || 'ver')}</a>`
-          : esc(l.imovel_titulo || l.imovel_ref || '—')}</td></tr>
-        <tr><th>Tipo</th><td>${esc(l.tipo || '—')}</td></tr>
-        <tr><th>Prazo</th><td>${esc(l.timing || '—')}</td></tr>
-        <tr><th>Financiamento</th><td>${esc(l.financiamento || '—')}</td></tr>
+          : esc(l.imovel_titulo || l.imovel_ref || '·')}</td></tr>
+        <tr><th>Tipo</th><td>${esc(l.tipo || '·')}</td></tr>
+        <tr><th>Prazo</th><td>${esc(l.timing || '·')}</td></tr>
+        <tr><th>Financiamento</th><td>${esc(l.financiamento || '·')}</td></tr>
         <tr><th>Resposta</th><td>${duracao(l.segundos_ate_resposta)}</td></tr>
       </tbody></table>
     </div>
@@ -269,7 +269,7 @@ async function abrirLead(leadId) {
       'https://wa.me/' + l.telefone.replace(/\D/g, '') + '?text=' + encodeURIComponent(caixa.value);
   });
 
-  // Carregar em enviar marca a primeira resposta — e para o cronometro.
+  // Carregar em enviar marca a primeira resposta, e para o cronometro.
   const zap = $('#btn-whatsapp');
   if (zap) zap.addEventListener('click', async () => {
     await api('/leads/' + leadId + '/contacto', { method: 'POST', corpo: { canal: 'whatsapp' } });
@@ -357,7 +357,7 @@ async function carregarDefinicoes() {
   f.assinatura.value = d.assinatura || '';
   f.endereco_leads.value = d.endereco_leads || '';
   $('#estado-chave').textContent = d.tem_chave
-    ? 'Configurada: ' + d.chave_mascara + ' — deixe em branco para manter.'
+    ? 'Configurada: ' + d.chave_mascara + ', deixe em branco para manter.'
     : 'Sem chave. Sem ela as leads são gravadas, mas não são qualificadas.';
 }
 
@@ -374,8 +374,10 @@ $('#form-definicoes').addEventListener('submit', async (ev) => {
 /* ---------------------------------------------------------------- estado */
 async function carregarEstado() {
   const s = await api('/estado-sistema');
+  // ok === true verde, ok === false vermelho, ok === null ambar (por configurar)
+  const cor = (ok) => (ok === true ? 'on' : ok === false ? 'off' : 'espera');
   const linha = (nome, v) => `<div class="estado-linha">
-    <span class="pisca ${v.ok ? 'on' : 'off'}"></span>
+    <span class="pisca ${cor(v.ok)}"></span>
     <div style="flex:1"><strong>${nome}</strong>
       <div class="nota-rodape" style="margin:0">${esc(v.detalhe || '')}</div></div>
   </div>`;

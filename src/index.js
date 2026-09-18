@@ -32,7 +32,7 @@ async function sessao(req, db) {
   return db.prepare('SELECT * FROM consultores WHERE id = ?').bind(consultorId).first();
 }
 
-const exigeSessao = (u) => (u ? null : erro('Sessao expirada. Volte a entrar.', 401));
+const exigeSessao = (u) => (u ? null : erro('Sessão expirada. Volte a entrar.', 401));
 
 function enriquecerConsultor(c) {
   return { id: c.id, nome: c.nome, email: c.email, telefone: c.telefone, papel: c.papel };
@@ -55,9 +55,9 @@ export default {
       // ---------- Publico: entrada de leads (formulario, webhook, palco)
       if (p === '/api/leads' && req.method === 'POST') {
         const corpo = await req.json().catch(() => null);
-        if (!corpo) return erro('Corpo invalido');
+        if (!corpo) return erro('Pedido inválido');
         if (!corpo.email && !corpo.telefone) {
-          return erro('E preciso pelo menos um email ou um telefone');
+          return erro('É preciso pelo menos um email ou um telefone');
         }
         const r = await criarLead(env, {
           nome: corpo.nome,
@@ -79,12 +79,12 @@ export default {
         const n = await db.prepare('SELECT COUNT(*) AS n FROM consultores').first();
         if (req.method === 'GET') return json({ instalado: n.n > 0 });
         if (req.method === 'POST') {
-          if (n.n > 0) return erro('Ja instalado', 409);
+          if (n.n > 0) return erro('Já instalado', 409);
           const c = await req.json();
           if (!c || !c.nome || !c.email || !c.pin) {
-            return erro('Nome, email e PIN sao obrigatorios');
+            return erro('Nome, email e PIN são obrigatórios');
           }
-          if (String(c.pin).length < 4) return erro('O PIN tem de ter pelo menos 4 digitos');
+          if (String(c.pin).length < 4) return erro('O PIN tem de ter pelo menos 4 dígitos');
           const cid = id();
           await db.prepare(
             'INSERT INTO consultores (id, nome, email, telefone, papel) VALUES (?,?,?,?,?)'
@@ -148,7 +148,7 @@ export default {
             'SELECT l.*, c.nome AS consultor_nome FROM leads l ' +
             'LEFT JOIN consultores c ON c.id = l.consultor_id WHERE l.id = ?'
           ).bind(leadId).first();
-          if (!lead) return erro('Lead nao encontrada', 404);
+          if (!lead) return erro('Lead não encontrada', 404);
           const hist = await db.prepare(
             'SELECT * FROM atividades WHERE lead_id = ? ORDER BY criado_em DESC'
           ).bind(leadId).all();
@@ -167,7 +167,7 @@ export default {
         if (req.method === 'POST' && accao === '/estado') {
           const corpo = await req.json();
           const validos = ['nova', 'contactada', 'em_conversa', 'visita', 'proposta', 'ganha', 'perdida'];
-          if (!validos.includes(corpo.estado)) return erro('Estado invalido');
+          if (!validos.includes(corpo.estado)) return erro('Estado inválido');
           await db.prepare('UPDATE leads SET estado = ? WHERE id = ?').bind(corpo.estado, leadId).run();
           await db.prepare(
             "INSERT INTO atividades (id, lead_id, consultor_id, tipo, detalhe) VALUES (?,?,?,'estado',?)"
@@ -189,7 +189,7 @@ export default {
           const q = await qualificarLead(env, leadId, null);
           return q
             ? json({ ok: true, ...q })
-            : erro('A IA nao respondeu. Verifique a chave em Definicoes.', 502);
+            : erro('A IA não respondeu. Verifique a chave em Definições.', 502);
         }
       }
 
@@ -210,10 +210,10 @@ export default {
         }
         if (req.method === 'POST') {
           if (eu.papel !== 'broker') {
-            return erro('So um broker pode acrescentar pessoas a equipa', 403);
+            return erro('Só um broker pode acrescentar pessoas à equipa', 403);
           }
           const c = await req.json();
-          if (!c || !c.nome || !c.email) return erro('Nome e email sao obrigatorios');
+          if (!c || !c.nome || !c.email) return erro('Nome e email são obrigatórios');
           await db.prepare(
             'INSERT INTO consultores (id, nome, email, telefone, papel) VALUES (?,?,?,?,?)'
           ).bind(id(), c.nome, c.email.toLowerCase(), c.telefone || null, c.papel || 'consultor').run();
@@ -283,15 +283,19 @@ export default {
         return json({
           base_dados: { ok: true, detalhe: 'Ligada' },
           ia: { ok: ia.ok, detalhe: ia.erro || 'Modelo ' + modelo, modelo },
-          email: {
-            ok: !!ultimaEmail,
-            detalhe: ultimaEmail
-              ? 'Ultima lead por email: ' + ultimaEmail.criado_em
-              : 'Ainda nao chegou nenhuma lead por email. Confirme o reencaminhamento.',
-          },
+          // Tres estados, nao dois. Numa instalacao nova ninguem configurou
+          // ainda o reencaminhamento, e isso nao e uma avaria: e uma tarefa
+          // por fazer. Pintar isso de vermelho faz uma instalacao saudavel
+          // parecer partida no primeiro dia.
+          email: ultimaEmail
+            ? { ok: true, detalhe: 'Última lead por email: ' + ultimaEmail.criado_em }
+            : {
+                ok: null,
+                detalhe: 'Por configurar. Reencaminhe para aqui os emails de lead dos portais e esta linha fica verde sozinha.',
+              },
           whatsapp: {
             ok: true,
-            detalhe: 'Modo assistido (wa.me) — sem custos e sem configuracao',
+            detalhe: 'Modo assistido (wa.me). Sem custos e sem configuração',
           },
           por_qualificar: semQualificar.n,
         });

@@ -1,4 +1,4 @@
-/* Speed-to-Lead — interface
+/* Speed-to-Lead, interface
    Desenhada para ser lida num telemovel com uma mao e num projetor a 20 metros. */
 
 :root {
@@ -172,6 +172,7 @@ main { padding: 16px; max-width: 1100px; margin: 0 auto; }
 .pisca { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .pisca.on { background: var(--verde); box-shadow: 0 0 0 3px var(--verde-fundo); }
 .pisca.off { background: var(--quente); box-shadow: 0 0 0 3px var(--quente-fundo); }
+.pisca.espera { background: var(--morno); box-shadow: 0 0 0 3px var(--morno-fundo); }
 
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--linha); }
