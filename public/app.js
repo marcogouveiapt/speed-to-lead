@@ -198,14 +198,15 @@ async function abrirLead(leadId) {
     ${l.resumo_ia ? `<p style="margin:0 0 10px">${esc(l.resumo_ia)}</p>` : ''}
     <div class="sinais">${sinais}</div>
 
-    ${l.link_whatsapp ? `
+    ${l.telefone ? `
       <label class="campo" style="margin-top:14px">
         <span>Mensagem de primeiro contacto, leia antes de enviar</span>
         <textarea id="msg-whatsapp">${esc(l.rascunho_whatsapp || '')}</textarea>
       </label>
-      <a class="botao whatsapp" id="btn-whatsapp" href="${esc(l.link_whatsapp)}" target="_blank" rel="noopener">
-        Abrir no WhatsApp e enviar
-      </a>
+      <a class="botao whatsapp" id="btn-whatsapp" href="#">Abrir no WhatsApp e enviar</a>
+      <p class="nota-rodape" style="text-align:center;margin-top:8px">
+        <a href="#" id="btn-whatsapp-web">Não abriu? Usar o WhatsApp Web</a>
+      </p>
       <p class="nota-rodape" style="text-align:center">
         A mensagem é enviada por si, do seu WhatsApp. A app nunca envia nada sozinha.</p>
     ` : `<div class="aviso">Sem telemóvel nesta lead, só é possível responder por email.</div>`}
@@ -262,19 +263,44 @@ async function abrirLead(leadId) {
   $('#gaveta').hidden = false;
   $('#fechar-gaveta').onclick = () => { $('#gaveta').hidden = true; };
 
-  // Editar a mensagem actualiza o link do WhatsApp em tempo real.
+  /* Abrir o WhatsApp sem passar pela pagina intermedia da Meta.
+     No telemovel, o wa.me abre a aplicacao diretamente.
+     No computador, o wa.me mostra um ecra "Abrir app / Continuar para o Web",
+     que em palco e um clique a mais e um ecra da Meta projetado a meio da
+     demonstracao. O esquema whatsapp:// salta essa pagina e abre a aplicacao
+     de secretaria. Fica sempre um link para o Web, para quem nao a tiver. */
   const caixa = $('#msg-whatsapp');
-  if (caixa) caixa.addEventListener('input', () => {
-    $('#btn-whatsapp').href =
-      'https://wa.me/' + l.telefone.replace(/\D/g, '') + '?text=' + encodeURIComponent(caixa.value);
-  });
+  const zap = $('#btn-whatsapp');
+  const zapWeb = $('#btn-whatsapp-web');
+
+  if (zap) {
+    const numero = (l.telefone || '').replace(/\D/g, '');
+    const telemovel = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    const actualizarLinks = () => {
+      const texto = encodeURIComponent(caixa ? caixa.value : (l.rascunho_whatsapp || ''));
+      zap.href = telemovel
+        ? 'https://wa.me/' + numero + '?text=' + texto
+        : 'whatsapp://send?phone=' + numero + '&text=' + texto;
+      if (zapWeb) {
+        zapWeb.href = 'https://web.whatsapp.com/send?phone=' + numero + '&text=' + texto;
+      }
+    };
+    actualizarLinks();
+    if (caixa) caixa.addEventListener('input', actualizarLinks);
+    if (zapWeb) {
+      zapWeb.target = '_blank';
+      zapWeb.rel = 'noopener';
+    }
+  }
 
   // Carregar em enviar marca a primeira resposta, e para o cronometro.
-  const zap = $('#btn-whatsapp');
-  if (zap) zap.addEventListener('click', async () => {
+  const marcarContacto = async () => {
     await api('/leads/' + leadId + '/contacto', { method: 'POST', corpo: { canal: 'whatsapp' } });
     carregarLeads(); carregarMetricas();
-  });
+  };
+  if (zap) zap.addEventListener('click', marcarContacto);
+  if (zapWeb) zapWeb.addEventListener('click', marcarContacto);
 
   const chamada = $('#btn-chamada');
   if (chamada) chamada.addEventListener('click', async () => {
