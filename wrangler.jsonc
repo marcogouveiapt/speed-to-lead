@@ -22,14 +22,6 @@
     }
   ],
 
-
-  "kv_namespaces": [
-    {
-      "binding": "SESSOES",
-      "id": "PLACEHOLDER_SUBSTITUIDO_NO_DEPLOY"
-    }
-  ],
-
   "vars": {
     "APP_NOME": "Speed-to-Lead"
   }
