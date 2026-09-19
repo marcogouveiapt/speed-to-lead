@@ -175,7 +175,7 @@ function desenharLeads() {
     const cls = nova ? (t.seg > 300 ? 'urgente' : '') : 'ok';
     const selo = l.categoria
       ? `<div class="selo ${l.categoria}">${l.categoria}</div>`
-      : `<div class="selo vazio">, </div>`;
+      : `<div class="selo vazio">·</div>`;
     return `<article class="cartao lead ${nova ? 'nova' : ''}" data-id="${l.id}" tabindex="0">
       ${selo}
       <div>
