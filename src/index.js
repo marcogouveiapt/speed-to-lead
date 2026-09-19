@@ -12,6 +12,13 @@ import { garantirEsquema } from './esquema.js';
 
 const COOKIE = 'stl_sessao';
 
+const CORS = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'POST, OPTIONS',
+  'access-control-allow-headers': 'content-type',
+  'access-control-max-age': '86400',
+};
+
 async function segredo(db) {
   let s = await lerDefinicao(db, '_segredo');
   if (!s) {
@@ -47,6 +54,12 @@ export default {
 
     if (!p.startsWith('/api/')) return env.ASSETS.fetch(req);
 
+    // A entrada de leads e publica de proposito: o formulario pode viver no
+    // site do consultor, noutro dominio. So este caminho abre ao exterior.
+    if (p === '/api/leads' && req.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS });
+    }
+
     try {
       // O botao de instalacao cria a base de dados mas nao corre migracoes.
       // A aplicacao trata disso sozinha, para nao exigir terminal a ninguem.
@@ -55,9 +68,9 @@ export default {
       // ---------- Publico: entrada de leads (formulario, webhook, palco)
       if (p === '/api/leads' && req.method === 'POST') {
         const corpo = await req.json().catch(() => null);
-        if (!corpo) return erro('Pedido inválido');
+        if (!corpo) return json({ erro: 'Pedido inválido' }, 400, CORS);
         if (!corpo.email && !corpo.telefone) {
-          return erro('É preciso pelo menos um email ou um telefone');
+          return json({ erro: 'É preciso pelo menos um email ou um telefone' }, 400, CORS);
         }
         const r = await criarLead(env, {
           nome: corpo.nome,
@@ -71,7 +84,7 @@ export default {
           portal: corpo.portal || 'proprio',
           parser: 'nativo',
         }, { ctx });
-        return json({ ok: true, ...r }, 201);
+        return json({ ok: true, ...r }, 201, CORS);
       }
 
       // ---------- Publico: primeira instalacao
